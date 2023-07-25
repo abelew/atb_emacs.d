@@ -671,8 +671,7 @@ prompt the user for a coding system."
               (setq found (cons here char)))
             (setq here (1+ here))) ))
       (and found (goto-char (1+ (car found))))
-          found))
-
+      found))
 
 (defun atb/eir-eval-in-python ()
   "eval-in-repl for Python."
@@ -799,3 +798,10 @@ of the statement."
                        (goto-char bs-pos)
                        (forward-line 1))))))
   (point-marker))
+
+
+(defun atb/org-send ()
+  (interactive)
+  (let ((info (org-babel-get-src-block-info)))
+    (cond ((eq "scheme" (first info))
+           (eir-eval-in-geiser)))))

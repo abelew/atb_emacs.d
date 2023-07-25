@@ -32,7 +32,7 @@
 
 (setq package-check-signature nil)
 (package-initialize)
-;;(package-refresh-contents :async)
+;;(package-refresh-contents)
 
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -45,7 +45,7 @@
          'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
+  (load bootstrap-file nil 'nomessage))
 
 (require 'use-package)
 (setq use-package-always-ensure t)
@@ -136,7 +136,11 @@
   :config
   (add-hook 'after-init-hook 'atb/benchmark-init-deactivate))
 
-(use-package code-cells)
+(use-package code-cells
+  :config
+  (add-hook 'code-cells-mode-hook 'code-cells-convert-ipynb)
+  :mode
+  ("\\.ipynb$" . code-cells-mode))
 
 ;; Looks like a neat toy!
 (use-package combobulate
@@ -189,26 +193,24 @@
   :init (doom-modeline-mode 1)
   :custom ((doom-modeline-height 15)))
 
-;(use-package eglot
-;  :ensure t
-;  :config
-;  (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
-;  (setq-default
-;   eglot-ignored-server-capabilities '(:documentFormattingProvider)
-;   eglot-workspace-configuration
-;   '((:pylsp . (:configurationSources ["flake8"] :plugins
-;                                      (:pycodestyle (:enabled nil) :mccabe (:enabled nil)
-;                                                    :flake8 (:enabled t))))))
-;  :hook
-;  ((elpy-mode . eglot-ensure)
-;   (python-mode . eglot-ensure)
-;   (ess-r-mode . eglot-ensure)))
+;;(use-package eglot
+;;  :ensure t
+;;  :config
+;;  (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
+;;  (setq-default
+;;   eglot-ignored-server-capabilities '(:documentFormattingProvider)
+;;   eglot-workspace-configuration
+;;   '((:pylsp . (:configurationSources ["flake8"] :plugins
+;;                                      (:pycodestyle (:enabled nil) :mccabe (:enabled nil)
+;;                                                    :flake8 (:enabled t))))))
+;;  :hook
+;;  ((elpy-mode . eglot-ensure)
+;;   (python-mode . eglot-ensure)
+;;   (ess-r-mode . eglot-ensure)))
 
 ;; jupyter in emacs
 (use-package ein
   :commands ein:run
-  :mode
-  (("\\.ipynb\\'" . ein:notebook-mode))
   :config
   (setq ein:console-args '("--profile" "default"))
   (setq ein:console-security-dir "~/.emacs.d/ein")
@@ -234,7 +236,7 @@
   :config
   (setq python-shell-interpreter "python"
         python-shell-interpreter-args "-i"
-        ;elpy-rpc-backend "rope"
+        ;;elpy-rpc-backend "rope"
         python-indent-guess-indent-offset-verbose nil ;; stop telling me you can't guess.
         python-indent-guess-indent-offset t ;; but please guess because I don't trust anyone.
         python-shell-enable-font-lock t
@@ -249,7 +251,7 @@
   (define-key python-mode-map "\t" 'company-indent-or-complete-common)
   (when (load "flycheck" t t)
     (setq flycheck-python-pycompile-executable "python")
-    ;(setq flycheck-python-pylint-executable "flake8")
+    ;;(setq flycheck-python-pylint-executable "flake8")
     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules)))
   (venv-initialize-interactive-shells)
   (global-company-mode 1)
@@ -274,15 +276,15 @@
 
 ;; emacs speaks statistics
 (defun atb/ess-settings ()
-;;  ;; something else is using setq-local on the indentation settings and overwriting my choice.
-;;  ;; However, if I do a setq-local back at it, it is maintained.
+  ;; something else is using setq-local on the indentation settings and overwriting my choice.
+  ;; However, if I do a setq-local back at it, it is maintained.
   (setq-local ess-indent-offset 2)
   (ess-set-style 'RStudio))
 (use-package ess
   :load-path "packages/ess"
   :mode
-  (("\\.Rd\\'" . R-mode)
-   ("\\.R\\'" . R-mode))
+  (("\\.Rd$" . R-mode)
+   ("\\.R$" . R-mode))
   :pin manual
   :bind*
   (:map ess-mode-map
@@ -305,7 +307,7 @@
   (require 'ess-site)
   (require 'ess-julia)
   (ess-set-style 'RStudio)
-  ; (ess-toggle-underscore nil)
+  ;; (ess-toggle-underscore nil)
   ;; https://github.com/emacs-ess/ESS/issues/1146
   (setq
    comint-prompt-read-only nil
@@ -348,8 +350,8 @@
   :pin manual
   :bind* ("\t" . #'company-indent-or-complete-common)
   :mode
-  (("\\.Rd\\'" . R-mode)
-   ("\\.R\\'" . R-mode))
+  (("\\.Rd$" . R-mode)
+   ("\\.R$" . R-mode))
   ;; :hook (R-mode . lsp-deferred)
   :commands R)
 
@@ -441,15 +443,15 @@
     :fringe-face 'flycheck-fringe-info))
 
 (flycheck-define-checker proselint
-    "A linter for prose."
-    :command ("proselint" source-inplace)
-    :error-patterns
-    ((warning line-start (file-name) ":" line ":" column ": "
-              (id (one-or-more (not (any " "))))
-              (message (one-or-more not-newline)
-                       (zero-or-more "\n" (any " ") (one-or-more not-newline)))
-              line-end))
-    :modes (text-mode markdown-mode gfm-mode org-mode))
+  "A linter for prose."
+  :command ("proselint" source-inplace)
+  :error-patterns
+  ((warning line-start (file-name) ":" line ":" column ": "
+            (id (one-or-more (not (any " "))))
+            (message (one-or-more not-newline)
+                     (zero-or-more "\n" (any " ") (one-or-more not-newline)))
+            line-end))
+  :modes (text-mode markdown-mode gfm-mode org-mode))
 
 ;; fuzzy file finder
 (use-package fzf)
@@ -458,7 +460,13 @@
 (use-package gcmh
   :demand
   :config
-    (gcmh-mode 1))
+  (gcmh-mode 1))
+
+(use-package geiser
+  :bind (:map scheme-mode-map
+              ([(shift return)] . eir-eval-in-geiser)))
+
+(use-package geiser-guile)
 
 ;; System for making binding keys easier
 (use-package general
@@ -481,16 +489,16 @@
   :commands (gptel)
   :config
   (defun gpt/read-file (file)
-  "Read the contents of FILE and remove trailing whitespace."
-  (with-temp-buffer
-    (insert-file-contents file)
-    (goto-char (point-min))
-    (while (not (eobp))
-      (delete-trailing-whitespace (line-beginning-position) (line-end-position))
-      (forward-line))
-    (if (eq (char-before (point-max)) 10) ;; check for final LF character
-        (delete-char -1)) ;; delete it if it's there
-    (buffer-string)))
+    "Read the contents of FILE and remove trailing whitespace."
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (while (not (eobp))
+        (delete-trailing-whitespace (line-beginning-position) (line-end-position))
+        (forward-line))
+      (if (eq (char-before (point-max)) 10) ;; check for final LF character
+          (delete-char -1)) ;; delete it if it's there
+      (buffer-string)))
   (setq gptel-use-curl nil)
   (setq gptel-api-key (gpt/read-file "~/.emacs.d/gptel_api.txt")))
 
@@ -526,7 +534,7 @@
 
 (use-package js2-mode
   :defer t
-  :mode "\\.js\\'"
+  :mode "\\.js$"
   :interpreter "node"
   :bind
   (:map js2-mode-map
@@ -546,7 +554,7 @@
   (setq-default js2-strict-inconsistent-return-warning nil)
   (use-package prettier-js)
   (use-package rjsx-mode
-    :mode "\\.jsx\\'"
+    :mode "\\.jsx$"
     :magic ("import React" . rjsx-mode))
   (use-package js2-refactor)
   (use-package json-mode)
@@ -554,28 +562,28 @@
   (add-hook 'js2-mode-hook #'js2-refactor-mode)
   (add-hook 'js2-mode-hook
             '(λ ()
-               (js2-refactor-mode)
-               (js2r-add-keybindings-with-prefix "M-m")
-               (key-chord-define js2-mode-map ";;" (λ (save-excursion (move-end-of-line nil) (insert ";"))))
-               (key-chord-define js2-mode-map ",," (λ (save-excursion (move-end-of-line nil) (insert ","))))
+                (js2-refactor-mode)
+                (js2r-add-keybindings-with-prefix "M-m")
+                (key-chord-define js2-mode-map ";;" (λ (save-excursion (move-end-of-line nil) (insert ";"))))
+                (key-chord-define js2-mode-map ",," (λ (save-excursion (move-end-of-line nil) (insert ","))))
 
-               (define-key js2-mode-map (kbd ";")
-                 (λ (if (looking-at ";")
-                        (forward-char)
-                      (funcall 'self-insert-command 1))))
-               ;; Overwrite this function to output to minibuffer
-               (defun nodejs-repl-execute (command &optional buf)
-                 "Execute a command and output the result to minibuffer."
-                 (let ((ret (nodejs-repl--send-string (concat command "\n"))))
-                   (setq ret (replace-regexp-in-string nodejs-repl-ansi-color-sequence-re "" ret))
-                   ;; delete inputs
-                   (setq ret (replace-regexp-in-string "\\(\\w\\|\\W\\)+\r\r\n" "" ret))
-                   (setq ret (replace-regexp-in-string "\r" "" ret))
-                   (setq ret (replace-regexp-in-string "\n.*\\'" "" ret))
-                   (setq ret (replace-regexp-in-string "\nundefined\\'" "" ret))
-                   (message ret)))
-               (defadvice nodejs-repl (after switch-back activate)
-                 (delete-window)))))
+                (define-key js2-mode-map (kbd ";")
+                            (λ (if (looking-at ";")
+                                   (forward-char)
+                                 (funcall 'self-insert-command 1))))
+                ;; Overwrite this function to output to minibuffer
+                (defun nodejs-repl-execute (command &optional buf)
+                  "Execute a command and output the result to minibuffer."
+                  (let ((ret (nodejs-repl--send-string (concat command "\n"))))
+                    (setq ret (replace-regexp-in-string nodejs-repl-ansi-color-sequence-re "" ret))
+                    ;; delete inputs
+                    (setq ret (replace-regexp-in-string "\\(\\w\\|\\W\\)+\r\r\n" "" ret))
+                    (setq ret (replace-regexp-in-string "\r" "" ret))
+                    (setq ret (replace-regexp-in-string "\n.*\\'" "" ret))
+                    (setq ret (replace-regexp-in-string "\nundefined\\'" "" ret))
+                    (message ret)))
+                (defadvice nodejs-repl (after switch-back activate)
+                  (delete-window)))))
 
 (use-package magit
   :bind ("C-x g" . magit-status)
@@ -589,9 +597,9 @@
 (use-package markdown-mode
   :commands (markdown-mode gfm-mode)
   :mode
-  (("README\\.md\\'" . gfm-mode)
-   ("\\.md\\'" . markdown-mode)
-   ("\\.markdown\\'" . markdown-mode))
+  (("README\\.md$" . gfm-mode)
+   ("\\.md$" . markdown-mode)
+   ("\\.markdown$" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
 
 (use-package mastodon
@@ -616,7 +624,7 @@
 
 ;; an epub reader
 (use-package nov
-  :mode (("\\.epub\\'" . nov-mode)))
+  :mode (("\\.epub$" . nov-mode)))
 
 (use-package numpydoc
   :ensure t
@@ -634,7 +642,7 @@
             #'ob-racket-raco-make-runtime-library)
   :straight (ob-racket
              :type git :host github :repo "hasu/emacs-ob-racket"
-                    :files ("*.el" "*.rkt")))
+             :files ("*.el" "*.rkt")))
 
 ;; Distraction-free screen
 (use-package olivetti
@@ -656,7 +664,7 @@
         (olivetti-mode 0)
         (text-scale-decrease 2))))
   :bind
-      (("<f9>" . distraction-free)))
+  (("<f9>" . distraction-free)))
 
 (use-package ob-ipython)
 
@@ -696,12 +704,14 @@
      (shell . t)
      (ipython . t)
      (racket . t)
-;;     (ein . t)
+     (scheme . t)
+     ;; (ein . t)
      (python . t)))
   (push '("conf-unix" . conf-unix) org-src-lang-modes)
   ;; This is needed as of Org 9.2
   (require 'org-tempo)
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("sc" . "src scheme :session"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
   (add-to-list 'org-structure-template-alist '("R" . "src R :session"))
   (add-to-list 'org-structure-template-alist '("py" . "src python :session"))
@@ -762,7 +772,7 @@
                   ((org-agenda-overriding-header "Cancelled Projects")
                    (org-agenda-files org-agenda-files)))))))
   (define-key global-map (kbd "C-c j")
-    (lambda () (interactive) (org-capture nil "jj")))
+              (lambda () (interactive) (org-capture nil "jj")))
   ;;  (efs/org-font-setup))
   )
 
@@ -808,7 +818,7 @@
     :mode 'markdown-mode
     :name "Markdown Cell"
     :head-matcher (rx bol ?# ? (>= 1 ?*) (* nonl) ?\n
-          "'''{python" (* nonl) ?\n)
+                      "'''{python" (* nonl) ?\n)
     :tail-matcher (rx bol "'''" (* nonl) ?\n)
     :head-mode 'host
     :tail-mode 'host
@@ -819,7 +829,7 @@
     :innermodes '(my/poly-python-markdown-innermode))
   :hook
   ((python-mode . my/poly-python-mode)
-;   (python-mode . eglot-ensure)
+                                        ;   (python-mode . eglot-ensure)
    (python-mode . company-mode)))
 
 (use-package poly-R
@@ -827,21 +837,21 @@
   :pin manual
   :after 'polymode
   :mode
-  (("\\.Rmd\\'" . poly-markdown+r-mode)
-   ("\\.jmd\\'" . poly-markdown-mode)))
+  (("\\.Rmd$" . poly-markdown+r-mode)
+   ("\\.jmd$" . poly-markdown-mode)))
 (use-package poly-markdown
   :load-path "~/.emacs.d/packages/poly-markdown"
   :pin manual
   :ensure nil
   :mode
-  (("\\.md" . poly-markdown-mode))
+  (("\\.md$" . poly-markdown-mode))
   :after 'polymode)
 (use-package poly-org
   :load-path "~/.emacs.d/packages/poly-org"
   :pin manual
   :after 'polymode
   :mode
-  (("\\.org\\'" . poly-org-mode)))
+  (("\\.org$" . poly-org-mode)))
 (use-package poly-noweb
   :load-path "~/.emacs.d/packages/poly-noweb"
   :pin manual
@@ -858,7 +868,7 @@
 
 (use-package projectile
   :diminish projectile-mode
-  ; :custom ((projectile-completion-system 'ivy))
+  ;; :custom ((projectile-completion-system 'ivy))
   :bind-keymap ("C-c p" . projectile-command-map)
   :config
   (projectile-mode)
