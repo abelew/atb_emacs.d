@@ -671,7 +671,12 @@ prompt the user for a coding system."
               (setq found (cons here char)))
             (setq here (1+ here))) ))
       (and found (goto-char (1+ (car found))))
+<<<<<<< HEAD
       found))
+=======
+          found))
+
+>>>>>>> 59a63ed (playing with using elpy in polymode mostly and getting venvs working)
 
 (defun atb/eir-eval-in-python ()
   "eval-in-repl for Python."
@@ -798,6 +803,7 @@ of the statement."
                        (goto-char bs-pos)
                        (forward-line 1))))))
   (point-marker))
+<<<<<<< HEAD
 
 
 (defun atb/org-send ()
@@ -805,3 +811,5 @@ of the statement."
   (let ((info (org-babel-get-src-block-info)))
     (cond ((eq "scheme" (first info))
            (eir-eval-in-geiser)))))
+=======
+>>>>>>> 59a63ed (playing with using elpy in polymode mostly and getting venvs working)

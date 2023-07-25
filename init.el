@@ -32,6 +32,7 @@
 
 (setq package-check-signature nil)
 (package-initialize)
+
 ;;(package-refresh-contents)
 
 (defvar bootstrap-version)
@@ -211,6 +212,8 @@
 ;; jupyter in emacs
 (use-package ein
   :commands ein:run
+  :mode
+  (("\\.ipynb\\'" . ein:notebook-mode))
   :config
   (setq ein:console-args '("--profile" "default"))
   (setq ein:console-security-dir "~/.emacs.d/ein")
@@ -644,6 +647,24 @@
              :type git :host github :repo "hasu/emacs-ob-racket"
              :files ("*.el" "*.rkt")))
 
+(use-package numpydoc
+  :ensure t
+  :defer t
+  :custom
+  (numpydoc-insert-examples-block nil)
+  (numpydoc-template-long nil)
+  :bind (:map python-mode-map
+              ("C-c C-n" . numpydoc-generate)))
+
+(use-package ob-racket
+  :after org
+  :config
+  (add-hook 'ob-racket-pre-runtime-library-load-hook
+            #'ob-racket-raco-make-runtime-library)
+  :straight (ob-racket
+             :type git :host github :repo "hasu/emacs-ob-racket"
+                    :files ("*.el" "*.rkt")))
+
 ;; Distraction-free screen
 (use-package olivetti
   :defer t
@@ -665,6 +686,8 @@
         (text-scale-decrease 2))))
   :bind
   (("<f9>" . distraction-free)))
+
+(use-package ob-ipython)
 
 (use-package ob-ipython)
 
@@ -829,7 +852,7 @@
     :innermodes '(my/poly-python-markdown-innermode))
   :hook
   ((python-mode . my/poly-python-mode)
-                                        ;   (python-mode . eglot-ensure)
+  ;;   (python-mode . eglot-ensure)
    (python-mode . company-mode)))
 
 (use-package poly-R
