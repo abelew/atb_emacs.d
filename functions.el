@@ -671,16 +671,7 @@ prompt the user for a coding system."
               (setq found (cons here char)))
             (setq here (1+ here))) ))
       (and found (goto-char (1+ (car found))))
-<<<<<<< HEAD
-<<<<<<< HEAD
       found))
-=======
-          found))
-
->>>>>>> 59a63ed (playing with using elpy in polymode mostly and getting venvs working)
-=======
-      found))
->>>>>>> 2d95e80 (added a hook for code-cells to automagically convert ipynb to a python)
 
 (defun atb/eir-eval-in-python ()
   "eval-in-repl for Python."
@@ -807,19 +798,9 @@ of the statement."
                        (goto-char bs-pos)
                        (forward-line 1))))))
   (point-marker))
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 2d95e80 (added a hook for code-cells to automagically convert ipynb to a python)
-
 
 (defun atb/org-send ()
   (interactive)
   (let ((info (org-babel-get-src-block-info)))
     (cond ((eq "scheme" (first info))
            (eir-eval-in-geiser)))))
-<<<<<<< HEAD
-=======
->>>>>>> 59a63ed (playing with using elpy in polymode mostly and getting venvs working)
-=======
->>>>>>> 2d95e80 (added a hook for code-cells to automagically convert ipynb to a python)
